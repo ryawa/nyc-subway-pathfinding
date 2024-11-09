@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>NYC Subway Pathfinding</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+  </head>
+  <body>
+    <div id="map" style="height: 100vh; width: 100%"></div>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script>
+      let lastZoom = 12;
+      const map = L.map("map").setView([40.7128, -74.006], lastZoom);
+      L.tileLayer(
+        "https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png",
+        {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          subdomains: "abcd",
+          maxZoom: 20,
+        }
+      ).addTo(map);
+
+      fetch("graph.json")
+        .then((response) => response.json())
+        .then((data) => {
+          data.nodes.forEach((node) => {
+            L.circle([node.lat, node.lon], { radius: 50 })
+              .bindTooltip(node.name)
+              .addTo(map);
+          });
+          data.edges.forEach((edge) => {
+            const sourceNode = data.nodes.find(
+              (element) => element.id == edge.source
+            );
+            const targetNode = data.nodes.find(
+              (element) => element.id == edge.target
+            );
+            const latlngs = [
+              [sourceNode.lat, sourceNode.lon],
+              [targetNode.lat, targetNode.lon],
+            ];
+
+            L.polyline(latlngs).addTo(map);
+          });
+        });
+
+      const tooltipThreshold = 15;
+      map.on("zoom", function () {
+        const zoom = map.getZoom();
+        if (zoom < tooltipThreshold && lastZoom >= tooltipThreshold) {
+          map.eachLayer((l) => {
+            if (l.getTooltip()) {
+              const tooltip = l.getTooltip();
+              l.unbindTooltip().bindTooltip(tooltip, {
+                permanent: false,
+              });
+            }
+          });
+        } else if (zoom >= tooltipThreshold && lastZoom < tooltipThreshold) {
+          map.eachLayer((l) => {
+            if (l.getTooltip()) {
+              const tooltip = l.getTooltip();
+              l.unbindTooltip().bindTooltip(tooltip, {
+                permanent: true,
+              });
+            }
+          });
+        }
+        lastZoom = zoom;
+      });
+    </script>
+  </body>
+</html>
