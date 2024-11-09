@@ -48,8 +48,28 @@
               [sourceNode.lat, sourceNode.lon],
               [targetNode.lat, targetNode.lon],
             ];
-
-            L.polyline(latlngs).addTo(map);
+            let color = "";
+            if (edge["route_id"]==="1"||edge["route_id"]==="2"||edge["route_id"]==="3"){
+              color = "red";
+            }
+            else if (edge["route_id"]==="4"||edge["route_id"]==="5"||edge["route_id"]==="6"||edge["route_id"]==="G"){
+              color = "green";
+            } else if (edge["route_id"]==="7"){
+              color = "purple";
+            } else if (edge["route_id"]==="A"||edge["route_id"]==="C"||edge["route_id"]==="E"||edge["route_id"]==="H"){
+              color = "blue";
+            } else if (edge["route_id"]==="B"||edge["route_id"]==="D"||edge["route_id"]==="F"||edge["route_id"]==="M"){
+              color = "orange";
+            } else if (edge["route_id"]==="N"||edge["route_id"]==="Q"||edge["route_id"]==="R"||edge["route_id"]==="W"){
+              color = "yellow";
+            } else if (edge["route_id"]==="L"||edge["route_id"]==="S"){
+              color = "gray";
+            } else if (edge["route_id"]==="J"||edge["route_id"]==="Z"){
+              color = "brown";
+            } else {
+              color = "pink"
+            }
+            L.polyline(latlngs, {color: color}).addTo(map);
           });
         });
 
