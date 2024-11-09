@@ -26,7 +26,6 @@ skip = True
 for i in range(len(stop_times)):
     if skip:
         skip = False
-        continue
 
     prev_stop = stop_times.iloc[i - 1]
     curr_stop = stop_times.iloc[i]
@@ -41,7 +40,7 @@ for i in range(len(stop_times)):
     depart_time = seconds_after_midnight(prev_stop["departure_time"])
     arrive_time = seconds_after_midnight(curr_stop["arrival_time"])
     travel_time = arrive_time - depart_time
-    route_id = prev_stop["trip_id"].split("-")[1][0]
+    route_id = prev_stop["trip_id"].split("_")[-1].split(".")[0]
     G.add_edge(
         prev_stop["stop_id"][:-1],
         curr_stop["stop_id"][:-1],
@@ -68,3 +67,4 @@ with open("graph.json", "w") as f:
 # Includes all rush hour service
 # Slow/parses all trips
 # No transfer time at same stop
+# overwritten, express, weekday, rush hour, timings
