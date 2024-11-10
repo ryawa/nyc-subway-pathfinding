@@ -16,9 +16,14 @@
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
+    <script src="SmoothWheelZoom.js"></script>
     <script>
       let lastZoom = 12;
-      const map = L.map("map").setView([40.7128, -74.006], lastZoom);
+      const map = L.map("map", {
+        scrollWheelZoom: false,
+        smoothWheelZoom: true,
+        smoothSensitivity: 1,
+      }).setView([40.7128, -74.006], lastZoom);
       L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
         {
