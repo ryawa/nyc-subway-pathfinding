@@ -17,28 +17,29 @@ for _, row in stops.iterrows():
         )
 
 
-def seconds_after_midnight(time):
+def to_seconds(time):
     h, m, s = [int(part) for part in time.split(":")]
     return 3600 * h + 60 * m + s
 
 
-skip = True
+skipped = True
 for i in range(len(stop_times)):
-    if skip:
-        skip = False
+    if skipped:
+        skipped = False
 
     prev_stop = stop_times.iloc[i - 1]
     curr_stop = stop_times.iloc[i]
 
     if curr_stop["stop_sequence"] != prev_stop["stop_sequence"] + 1:
-        skip = True
+        skipped = True
         continue
+    # If trip is not on weekdays
     if "Weekday" not in curr_stop["trip_id"] and "L0S1" not in curr_stop["trip_id"]:
-        skip = True
+        skipped = True
         continue
 
-    depart_time = seconds_after_midnight(prev_stop["departure_time"])
-    arrive_time = seconds_after_midnight(curr_stop["arrival_time"])
+    depart_time = to_seconds(prev_stop["departure_time"])
+    arrive_time = to_seconds(curr_stop["arrival_time"])
     travel_time = arrive_time - depart_time
     route_id = prev_stop["trip_id"].split("_")[-1].split(".")[0]
     G.add_edge(
