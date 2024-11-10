@@ -29,6 +29,35 @@
         }
       ).addTo(map);
 
+      const colors = {
+        1: "#ee352e",
+        2: "#ee352e",
+        3: "#ee352e",
+        4: "#00933c",
+        5: "#00933c",
+        6: "#00933c",
+        7: "#b933ad",
+        A: "#0039a6",
+        C: "#0039a6",
+        E: "#0039a6",
+        H: "#808183",
+        B: "#ff6319",
+        D: "#ff6319",
+        F: "#ff6319",
+        M: "#ff6319",
+        N: "#fccc0a",
+        Q: "#fccc0a",
+        R: "#fccc0a",
+        W: "#fccc0a",
+        L: "#a7a9ac",
+        FS: "#808183",
+        GS: "#808183",
+        SI: "#0078c6",
+        J: "#996633",
+        Z: "#996633",
+        G: "#6cbe45",
+      };
+
       fetch("graph.json")
         .then((response) => response.json())
         .then((data) => {
@@ -48,32 +77,10 @@
               [sourceNode.lat, sourceNode.lon],
               [targetNode.lat, targetNode.lon],
             ];
-            let color = "";
-            if (edge["route_id"]==="1"||edge["route_id"]==="2"||edge["route_id"]==="3"){
-              color = "#ee352e";
-            }
-            else if (edge["route_id"]==="4"||edge["route_id"]==="5"||edge["route_id"]==="6"){
-              color = "#00933c";
-            } else if (edge["route_id"]==="7"){
-              color = "#b933ad";
-            } else if (edge["route_id"]==="A"||edge["route_id"]==="C"||edge["route_id"]==="E"||edge["route_id"]==="H"){
-              color = "#0039a6";
-            } else if (edge["route_id"]==="B"||edge["route_id"]==="D"||edge["route_id"]==="F"||edge["route_id"]==="M"){
-              color = "#ff6319";
-            } else if (edge["route_id"]==="N"||edge["route_id"]==="Q"||edge["route_id"]==="R"||edge["route_id"]==="W"){
-              color = "#fccc0a";
-            } else if (edge["route_id"]==="L"||edge["route_id"]==="S"){
-              color = "#808183";
-            } else if (edge["route_id"]==="J"||edge["route_id"]==="Z"){
-              color = "#996633";
-            }
-            else if (edge["route_id"]==="G"){
-              color = "#6cbe45"
-            }
-            else {
-              color = "black"
-            }
-            L.polyline(latlngs, {color: color}).addTo(map);
+
+            L.polyline(latlngs, {
+              color: colors[edge["route_id"]] ?? "black",
+            }).addTo(map);
           });
         });
 
