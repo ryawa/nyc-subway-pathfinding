@@ -8,6 +8,12 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""
     />
+    <style>
+      .icon {
+        display: flex;
+        align-items: center;
+      }
+    </style>
   </head>
   <body>
     <div id="map" style="height: 100vh; width: 100%"></div>
@@ -18,12 +24,12 @@
     ></script>
     <script src="SmoothWheelZoom.js"></script>
     <script>
-      let lastZoom = 12;
+      let lastZoom = 13;
       const map = L.map("map", {
         scrollWheelZoom: false,
         smoothWheelZoom: true,
         smoothSensitivity: 1,
-      }).setView([40.7128, -74.006], lastZoom);
+      }).setView([40.70949, -73.97853], lastZoom);
       L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
         {
@@ -67,9 +73,26 @@
         .then((response) => response.json())
         .then((data) => {
           data.nodes.forEach((node) => {
-            L.circle([node.lat, node.lon], { radius: 50 })
-              .bindTooltip(node.name)
-              .addTo(map);
+            L.marker([node.lat, node.lon], {
+              opacity: 0,
+              icon: L.divIcon({
+                className: "icon",
+                html: `
+                  <div
+                    style="
+                      min-width: 4px;
+                      width: 4px;
+                      height: 4px;
+                      margin-left: 4px;
+                      margin-right: 4px;
+                      background-color: black;
+                      border-radius: 50%;
+                    "
+                  ></div>
+                  <span style="white-space: nowrap">${node.name}</span>
+                `,
+              }),
+            }).addTo(map);
           });
           data.edges.forEach((edge) => {
             const sourceNode = data.nodes.find(
@@ -89,25 +112,19 @@
           });
         });
 
-      const tooltipThreshold = 15;
+      const tooltipThreshold = 13.5;
       map.on("zoom", function () {
         const zoom = map.getZoom();
         if (zoom < tooltipThreshold && lastZoom >= tooltipThreshold) {
           map.eachLayer((l) => {
-            if (l.getTooltip()) {
-              const tooltip = l.getTooltip();
-              l.unbindTooltip().bindTooltip(tooltip, {
-                permanent: false,
-              });
+            if (l instanceof L.Marker) {
+              l.setOpacity(0);
             }
           });
         } else if (zoom >= tooltipThreshold && lastZoom < tooltipThreshold) {
           map.eachLayer((l) => {
-            if (l.getTooltip()) {
-              const tooltip = l.getTooltip();
-              l.unbindTooltip().bindTooltip(tooltip, {
-                permanent: true,
-              });
+            if (l instanceof L.Marker) {
+              l.setOpacity(1);
             }
           });
         }
