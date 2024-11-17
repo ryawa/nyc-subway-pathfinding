@@ -8,13 +8,34 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""
     />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+      rel="stylesheet"
+    />
     <style>
       .icon {
         display: flex;
         align-items: center;
       }
-      *{
-        font-family: 'Roboto', sans-serif;
+      .dot {
+        min-width: 4px;
+        width: 4px;
+        height: 4px;
+        margin-left: 4px;
+        margin-right: 4px;
+        background-color: black;
+        border-radius: 50%;
+      }
+      .label {
+        font-size: 13px;
+        color: #212427;
+        text-shadow: -0.2px -0.2px 0 #fff, 0.2px -0.2px 0 #fff,
+          -0.2px 0.2px 0 #fff, 0.2px 0.2px 0 #fff;
+        white-space: nowrap;
+        font-family: "Roboto", sans-serif;
+        font-weight: 500;
       }
     </style>
   </head>
@@ -26,6 +47,8 @@
       crossorigin=""
     ></script>
     <script src="SmoothWheelZoom.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/rbush@1.4.3/rbush.min.js"></script>
+    <script src="Leaflet.LayerGroup.Collision.js"></script>
     <script>
       let lastZoom = 13;
       const map = L.map("map", {
@@ -42,6 +65,7 @@
           maxZoom: 20,
         }
       ).addTo(map);
+      const collisionLayer = L.layerGroup.collision({ margin: 5 }).addTo(map);
 
       const colors = {
         1: "#ee352e",
@@ -75,7 +99,6 @@
       fetch("graph.json")
         .then((response) => response.json())
         .then((data) => {
-
           data.edges.forEach((edge) => {
             const sourceNode = data.nodes.find(
               (element) => element.id == edge.source
@@ -90,51 +113,25 @@
 
             L.polyline(latlngs, {
               color: colors[edge["route_id"]] ?? "black",
+              weight: 1.5,
             }).addTo(map);
           });
           data.nodes.forEach((node) => {
-            L.marker([node.lat, node.lon], {
-              opacity: 0,
-              icon: L.divIcon({
-                className: "icon",
-                html: `
-                  <div
-                    style="
-                      min-width: 4px;
-                      width: 4px;
-                      height: 4px;
-                      margin-left: 4px;
-                      margin-right: 4px;
-                      background-color: black;
-                      border-radius: 50%;
-                      
-                    "
-                  ></div>
-                  <span style="font-size:14px;font-weight:900;-webkit-text-stroke:.7px white;white-space: nowrap;">${node.name}</span>
-                `,
-              }),//text-shadow: 0 0 5px white,0 0 5px white,0 0 5px white,0 0 5px white;
-            }).addTo(map);
+            collisionLayer.addLayer(
+              L.marker([node.lat, node.lon], {
+                icon: L.divIcon({
+                  className: "icon",
+                  html: `
+                        <div class="dot"></div>
+                        <span class="label">${node.name}</span>
+                      `,
+                }),
+              }).on("click", (e) => {
+                console.log(e.latlng);
+              })
+            );
           });
         });
-
-      const tooltipThreshold = 13.5;
-      map.on("zoom", function () {
-        const zoom = map.getZoom();
-        if (zoom < tooltipThreshold && lastZoom >= tooltipThreshold) {
-          map.eachLayer((l) => {
-            if (l instanceof L.Marker) {
-              l.setOpacity(0);
-            }
-          });
-        } else if (zoom >= tooltipThreshold && lastZoom < tooltipThreshold) {
-          map.eachLayer((l) => {
-            if (l instanceof L.Marker) {
-              l.setOpacity(1);
-            }
-          });
-        }
-        lastZoom = zoom;
-      });
     </script>
   </body>
 </html>
