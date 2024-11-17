@@ -13,6 +13,9 @@
         display: flex;
         align-items: center;
       }
+      *{
+        font-family: 'Roboto', sans-serif;
+      }
     </style>
   </head>
   <body>
@@ -72,6 +75,23 @@
       fetch("graph.json")
         .then((response) => response.json())
         .then((data) => {
+
+          data.edges.forEach((edge) => {
+            const sourceNode = data.nodes.find(
+              (element) => element.id == edge.source
+            );
+            const targetNode = data.nodes.find(
+              (element) => element.id == edge.target
+            );
+            const latlngs = [
+              [sourceNode.lat, sourceNode.lon],
+              [targetNode.lat, targetNode.lon],
+            ];
+
+            L.polyline(latlngs, {
+              color: colors[edge["route_id"]] ?? "black",
+            }).addTo(map);
+          });
           data.nodes.forEach((node) => {
             L.marker([node.lat, node.lon], {
               opacity: 0,
@@ -87,27 +107,12 @@
                       margin-right: 4px;
                       background-color: black;
                       border-radius: 50%;
+                      
                     "
                   ></div>
-                  <span style="white-space: nowrap">${node.name}</span>
+                  <span style="font-size:14px;font-weight:900;-webkit-text-stroke:.7px white;white-space: nowrap;">${node.name}</span>
                 `,
-              }),
-            }).addTo(map);
-          });
-          data.edges.forEach((edge) => {
-            const sourceNode = data.nodes.find(
-              (element) => element.id == edge.source
-            );
-            const targetNode = data.nodes.find(
-              (element) => element.id == edge.target
-            );
-            const latlngs = [
-              [sourceNode.lat, sourceNode.lon],
-              [targetNode.lat, targetNode.lon],
-            ];
-
-            L.polyline(latlngs, {
-              color: colors[edge["route_id"]] ?? "black",
+              }),//text-shadow: 0 0 5px white,0 0 5px white,0 0 5px white,0 0 5px white;
             }).addTo(map);
           });
         });
