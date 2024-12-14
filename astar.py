@@ -68,10 +68,11 @@ def weighted_astar(graph, start, goal, node_positions, weight_factor=1.0):
 def parse_graph(data):
     graph = {}
     node_positions = {}
-
+    node_names = {}
     # Create node positions mapping
     for node in data["nodes"]:
         node_positions[node["id"]] = (node["lat"], node["lon"])
+        node_names[node["id"]] = node["name"]
 
     # Create adjacency list
     for edge in data["edges"]:
@@ -87,7 +88,7 @@ def parse_graph(data):
         graph[source].append((target, weight))
         graph[target].append((source, weight))  # Assuming the graph is undirected
 
-    return graph, node_positions
+    return graph, node_positions, node_names
 
 
 # Example usage
@@ -98,12 +99,15 @@ if __name__ == "__main__":
 
     graph = data["edges"]
     node_positions = data["nodes"]
-    graph, node_positions = parse_graph(data)
+    graph, node_positions, node_names = parse_graph(data)
     start = "G08"
-    goal = "A36"
+    goal = "L28"
     weight_factor = 1.5
 
     # Run Weighted A*
     path, cost = weighted_astar(graph, start, goal, node_positions, weight_factor)
-    print("Path:", path)
-    print("Cost:", cost)
+    for stop in path:
+        node = node_names[stop]
+        print(node)
+    #print("Path:", path)
+    #print("Cost:", cost)
