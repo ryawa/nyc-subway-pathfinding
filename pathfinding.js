@@ -12,7 +12,7 @@ function heuristic(x, y) {
       2;
 
   const dist = 2 * r * Math.asin(Math.sqrt(a));
-  return dist / 8; // 8 m/s avg speed
+  return dist / 0.008; // 8 m/s avg speed
 }
 
 function aStar(graph, start, goal) {
