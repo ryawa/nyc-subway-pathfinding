@@ -1,6 +1,7 @@
 import json
-import pandas as pd
+
 import networkx as nx
+import pandas as pd
 
 stop_times = pd.read_csv("gtfs/stop_times.txt")
 stops = pd.read_csv("gtfs/stops.txt")
