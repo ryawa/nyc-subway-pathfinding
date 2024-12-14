@@ -124,6 +124,7 @@
             goal = e.target.data.id;
             const [route, cost] = aStar(graph, start, goal);
             let prev;
+            let textRoute = [];
             for (const id of route) {
               const curr = data.nodes.find((element) => element.id == id);
               if (prev) {
@@ -136,19 +137,19 @@
                   weight: 5,
                 }).addTo(routeLayer);
               }
+              textRoute.push(curr.name);
               prev = curr;
             }
-            document.getElementById("route").innerText = `${route} (${
+            document.getElementById("route").innerText = `${textRoute} (${
               cost / 60
             } min)`;
           } else {
             routeLayer.clearLayers();
             document.getElementById("route").innerText =
               "Click on two stations to get route";
-            start = null;
+            start = e.target.data.id;
             goal = null;
             chooseGoal = false;
-            start = e.target.data.id;
           }
           chooseGoal = !chooseGoal;
         });
