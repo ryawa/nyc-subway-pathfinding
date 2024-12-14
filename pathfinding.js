@@ -1,135 +1,56 @@
-let cols = 5; //columns in the grid
-let rows = 5; //rows in the grid
+import mnemonist from "https://cdn.jsdelivr.net/npm/mnemonist@0.39.8/+esm";
 
-let grid = new Array(cols); //array of all the grid points
+function heuristic(x, y) {
+  const r = 6371;
+  const p = Math.PI / 180;
+  const a =
+    0.5 -
+    Math.cos((y[0] - x[0]) * p) / 2 +
+    (Math.cos(x[0] * p) *
+      Math.cos(y[0] * p) *
+      (1 - Math.cos((y[1] - x[1]) * p))) /
+      2;
 
-let openSet = []; //array containing unevaluated grid points
-let closedSet = []; //array containing completely evaluated grid points
-
-let start; //starting grid point
-let end; // ending grid point (goal)
-let path = [];
-
-//heuristic we will be using - Manhattan distance
-//for other heuristics visit - https://theory.stanford.edu/~amitp/GameProgramming/Heuristics.html
-function heuristic(position0, position1) {
-  let d1 = Math.abs(position1.x - position0.x);
-  let d2 = Math.abs(position1.y - position0.y);
-
-  return d1 + d2;
+  const dist = 2 * r * Math.asin(Math.sqrt(a));
+  return dist / 8; // 8 m/s avg speed
 }
 
-//constructor function to create all the grid points as objects containind the data for the points
-function GridPoint(x, y) {
-  this.x = x; //x location of the grid point
-  this.y = y; //y location of the grid point
-  this.f = 0; //total cost function
-  this.g = 0; //cost function from start to the current grid point
-  this.h = 0; //heuristic estimated cost function from current grid point to the goal
-  this.neighbors = []; // neighbors of the current grid point
-  this.parent = undefined; // immediate source of the current grid point
-
-  // update neighbors array for a given grid point
-  this.updateNeighbors = function (grid) {
-    let i = this.x;
-    let j = this.y;
-    if (i < cols - 1) {
-      this.neighbors.push(grid[i + 1][j]);
-    }
-    if (i > 0) {
-      this.neighbors.push(grid[i - 1][j]);
-    }
-    if (j < rows - 1) {
-      this.neighbors.push(grid[i][j + 1]);
-    }
-    if (j > 0) {
-      this.neighbors.push(grid[i][j - 1]);
-    }
-  };
-}
-
-//initializing the grid
-function init() {
-  //making a 2D array
-  for (let i = 0; i < cols; i++) {
-    grid[i] = new Array(rows);
-  }
-
-  for (let i = 0; i < cols; i++) {
-    for (let j = 0; j < rows; j++) {
-      grid[i][j] = new GridPoint(i, j);
-    }
-  }
-
-  for (let i = 0; i < cols; i++) {
-    for (let j = 0; j < rows; j++) {
-      grid[i][j].updateNeighbors(grid);
-    }
-  }
-
-  start = grid[0][0];
-  end = grid[cols - 1][rows - 1];
-
-  openSet.push(start);
-
-  console.log(grid);
-}
-
-//A star search implementation
-
-function search() {
-  init();
-  while (openSet.length > 0) {
-    //assumption lowest index is the first one to begin with
-    let lowestIndex = 0;
-    for (let i = 0; i < openSet.length; i++) {
-      if (openSet[i].f < openSet[lowestIndex].f) {
-        lowestIndex = i;
+function aStar(graph, start, goal) {
+  const openSet = new mnemonist.FibonacciHeap((a, b) => {
+    if (a[1] < b[1]) return -1;
+    if (a[1] > b[1]) return 1;
+    return 0;
+  });
+  openSet.push([start, 0]);
+  const prev = {};
+  const costTo = {};
+  costTo[start] = 0;
+  while (openSet.size > 0) {
+    let [current, _] = openSet.pop();
+    if (current == goal) {
+      const path = [];
+      while (current in prev) {
+        path.push(current);
+        current = prev[current];
       }
+      path.push(start);
+      return [path.reverse(), costTo[goal]];
     }
-    let current = openSet[lowestIndex];
-
-    if (current === end) {
-      let temp = current;
-      path.push(temp);
-      while (temp.parent) {
-        path.push(temp.parent);
-        temp = temp.parent;
+    for (const [neighbor, cost] of Object.entries(graph[current])) {
+      if (neighbor === "coords") {
+        continue;
       }
-      console.log("DONE!");
-      // return the traced path
-      return path.reverse();
-    }
-
-    //remove current from openSet
-    openSet.splice(lowestIndex, 1);
-    //add current to closedSet
-    closedSet.push(current);
-
-    let neighbors = current.neighbors;
-
-    for (let i = 0; i < neighbors.length; i++) {
-      let neighbor = neighbors[i];
-
-      if (!closedSet.includes(neighbor)) {
-        let possibleG = current.g + 1;
-
-        if (!openSet.includes(neighbor)) {
-          openSet.push(neighbor);
-        } else if (possibleG >= neighbor.g) {
-          continue;
-        }
-
-        neighbor.g = possibleG;
-        neighbor.h = heuristic(neighbor, end);
-        neighbor.f = neighbor.g + neighbor.h;
-        neighbor.parent = current;
+      const newCost = costTo[current] + graph[current][neighbor];
+      if (!(neighbor in costTo) || newCost < cost[neighbor]) {
+        costTo[neighbor] = newCost;
+        prev[neighbor] = current;
+        openSet.push([
+          neighbor,
+          newCost + heuristic(graph[goal].coords, graph[neighbor].coords),
+        ]);
       }
     }
   }
-
-  //no solution by default
-  return [];
 }
 
-console.log(search());
+export default aStar;

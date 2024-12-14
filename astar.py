@@ -1,6 +1,6 @@
 import heapq
-import math
 import json
+import math
 
 
 def manhattan_heuristic(node, goal):
@@ -54,12 +54,14 @@ def weighted_astar(graph, start, goal, node_positions, weight_factor=1.0):
             tentative_g = g_cost[current] + cost
             if neighbor not in g_cost or tentative_g < g_cost[neighbor]:
                 g_cost[neighbor] = tentative_g
-                heuristic_cost = manhattan_heuristic(node_positions[current], node_positions[goal])
-                f_cost = tentative_g + weight_factor * heuristic_cost
+                heuristic_cost = manhattan_heuristic(
+                    node_positions[current], node_positions[goal]
+                )
+                f_cost = tentative_g + heuristic_cost
                 heapq.heappush(open_set, (f_cost, neighbor))
                 came_from[neighbor] = current
 
-    return None, float('inf')  # No path found
+    return None, float("inf")  # No path found
 
 
 # Parsing nodes and edges

@@ -40,7 +40,8 @@
     </style>
   </head>
   <body>
-    <div id="map" style="height: 100vh; width: 100%"></div>
+    <div id="route">Hi</div>
+    <div id="map" style="height: 95vh; width: 100%"></div>
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
@@ -49,7 +50,9 @@
     <script src="SmoothWheelZoom.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/rbush@1.4.3/rbush.min.js"></script>
     <script src="Leaflet.LayerGroup.Collision.js"></script>
-    <script>
+    <script type="module" src="./pathfinding.js"></script>
+    <script type="module">
+      import aStar from "./pathfinding.js";
       let lastZoom = 13;
       const map = L.map("map", {
         scrollWheelZoom: false,
@@ -96,42 +99,74 @@
         G: "#6cbe45",
       };
 
-      fetch("graph.json")
-        .then((response) => response.json())
-        .then((data) => {
-          data.edges.forEach((edge) => {
-            const sourceNode = data.nodes.find(
-              (element) => element.id == edge.source
-            );
-            const targetNode = data.nodes.find(
-              (element) => element.id == edge.target
-            );
-            const latlngs = [
-              [sourceNode.lat, sourceNode.lon],
-              [targetNode.lat, targetNode.lon],
-            ];
+      const graph = {};
+      const response = await fetch("graph.json");
+      const data = await response.json();
+      let start;
+      let goal;
+      let chooseGoal = false;
+      data.nodes.forEach((node) => {
+        graph[node.id] = { coords: [node.lat, node.lon] };
 
-            L.polyline(latlngs, {
-              color: colors[edge["route_id"]] ?? "black",
-              weight: 1.5,
-            }).addTo(map);
-          });
-          data.nodes.forEach((node) => {
-            collisionLayer.addLayer(
-              L.marker([node.lat, node.lon], {
-                icon: L.divIcon({
-                  className: "icon",
-                  html: `
+        const marker = new L.Marker([node.lat, node.lon], {
+          icon: L.divIcon({
+            className: "icon",
+            html: `
                         <div class="dot"></div>
                         <span class="label">${node.name}</span>
                       `,
-                }),
-              }).on("click", (e) => {
-                console.log(e.latlng);
-              })
-            );
-          });
+          }),
+        }).addTo(collisionLayer);
+        marker.data = { id: node.id };
+        marker.on("click", (e) => {
+          if (chooseGoal) {
+            goal = e.target.data.id;
+            const [route, cost] = aStar(graph, start, goal);
+            let prev = undefined;
+            for (const id of route) {
+              const curr = data.nodes.find((element) => element.id == id);
+              if (prev) {
+                const latlngs = [
+                  [prev.lat, prev.lon],
+                  [curr.lat, curr.lon],
+                ];
+
+                L.polyline(latlngs, {
+                  // color: colors[edge["route_id"]] ?? "black",
+                  weight: 1.5,
+                }).addTo(map);
+              }
+              prev = curr;
+            }
+            document.getElementById("route").innerText = `${route} (${
+              cost / 60
+            } min)`;
+          } else {
+            start = e.target.data.id;
+          }
+          chooseGoal = !chooseGoal;
         });
+      });
+      data.edges.forEach((edge) => {
+        graph[edge.source][edge.target] = edge.weight;
+
+        const sourceNode = data.nodes.find(
+          (element) => element.id == edge.source
+        );
+        const targetNode = data.nodes.find(
+          (element) => element.id == edge.target
+        );
+        const latlngs = [
+          [sourceNode.lat, sourceNode.lon],
+          [targetNode.lat, targetNode.lon],
+        ];
+
+        L.polyline(latlngs, {
+          color: colors[edge["route_id"]] ?? "black",
+          weight: 1.5,
+        }).addTo(map);
+      });
+      console.log(aStar(graph, "G08", "A36"));
     </script>
   </body>
 </html>
