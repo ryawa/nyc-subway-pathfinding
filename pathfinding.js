@@ -27,7 +27,7 @@ function aStar(graph, start, goal) {
   costTo[start] = 0;
   while (openSet.size > 0) {
     let [current, _] = openSet.pop();
-    if (current == goal) {
+    if (current === goal) {
       const path = [];
       while (current in prev) {
         path.push(current);

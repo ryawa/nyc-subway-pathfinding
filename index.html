@@ -40,7 +40,7 @@
     </style>
   </head>
   <body>
-    <div id="route">Hi</div>
+    <div id="route">Click on two stations to get route</div>
     <div id="map" style="height: 95vh; width: 100%"></div>
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -69,6 +69,7 @@
         }
       ).addTo(map);
       const collisionLayer = L.layerGroup.collision({ margin: 5 }).addTo(map);
+      const routeLayer = L.layerGroup().addTo(map);
 
       const colors = {
         1: "#ee352e",
@@ -112,9 +113,9 @@
           icon: L.divIcon({
             className: "icon",
             html: `
-                        <div class="dot"></div>
-                        <span class="label">${node.name}</span>
-                      `,
+              <div class="dot"></div>
+              <span class="label">${node.name}</span>
+            `,
           }),
         }).addTo(collisionLayer);
         marker.data = { id: node.id };
@@ -122,7 +123,7 @@
           if (chooseGoal) {
             goal = e.target.data.id;
             const [route, cost] = aStar(graph, start, goal);
-            let prev = undefined;
+            let prev;
             for (const id of route) {
               const curr = data.nodes.find((element) => element.id == id);
               if (prev) {
@@ -132,9 +133,8 @@
                 ];
 
                 L.polyline(latlngs, {
-                  // color: colors[edge["route_id"]] ?? "black",
-                  weight: 1.5,
-                }).addTo(map);
+                  weight: 5,
+                }).addTo(routeLayer);
               }
               prev = curr;
             }
@@ -142,6 +142,12 @@
               cost / 60
             } min)`;
           } else {
+            routeLayer.clearLayers();
+            document.getElementById("route").innerText =
+              "Click on two stations to get route";
+            start = null;
+            goal = null;
+            chooseGoal = false;
             start = e.target.data.id;
           }
           chooseGoal = !chooseGoal;
@@ -166,7 +172,6 @@
           weight: 1.5,
         }).addTo(map);
       });
-      console.log(aStar(graph, "G08", "A36"));
     </script>
   </body>
 </html>
