@@ -140,9 +140,9 @@
               textRoute.push(curr.name);
               prev = curr;
             }
-            document.getElementById("route").innerText = `${textRoute} (${
-              cost / 60
-            } min)`;
+            document.getElementById("route").innerText = `${textRoute.join(
+              " → "
+            )} (${cost / 60} min)`;
           } else {
             routeLayer.clearLayers();
             document.getElementById("route").innerText =
