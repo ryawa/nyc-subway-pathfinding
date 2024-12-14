@@ -140,8 +140,8 @@
               textRoute.push(curr.name);
               prev = curr;
             }
-            document.getElementById("route").innerText = `${textRoute.join(
-              " → "
+            document.getElementById("route").innerHTML = `${textRoute.join(
+              " &#x2192; "
             )} (${cost / 60} min)`;
           } else {
             routeLayer.clearLayers();
